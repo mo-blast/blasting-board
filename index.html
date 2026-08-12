@@ -261,28 +261,28 @@
     <div class="info-grid">
         <div class="info-box">
             <div class="label">DATE</div>
-            <div class="value">12 / 08 / 2026</div>
+            <div class="value" id="blasting-date">Loading...</div>
         </div>
 
         <div class="info-box">
             <div class="label">TARGET TIME</div>
-            <div class="value" id="blasting-time">16:30 WITA</div>
+            <div class="value" id="blasting-time">Loading...</div>
         </div>
 
         <div class="info-box live-clock-box">
             <div class="label">CURRENT TIME</div>
-            <div class="live-value" id="live-clock">--:---- WITA</div>
+            <div class="live-value" id="live-clock">--:--:-- WITA</div>
         </div>
 
         <div class="info-box full-width">
             <div class="label">LOCATION</div>
-            <div class="location-value">LEMBO EAST QUARRY</div>
+            <div class="location-value" id="blasting-location">Loading...</div>
         </div>
     </div>
 
     <!-- MOOD STATUS PANEL -->
     <div class="status-panel" id="status-banner">
-        ✓ BLASTING COMPLETED / AREA CLEARED
+        CONNECTING TO SYSTEM...
     </div>
 
 </div>
@@ -292,8 +292,9 @@
 <script>
   const audio = new Audio('sirine.mp3');
   let played = false;
+  
+  const REPO_URL = "https://github.com";
 
-  // Fungsi Jam Digital Live Real-Time
   function updateLiveClock() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
@@ -306,27 +307,22 @@
     }
   }
 
-  // LANGKAH FIX: Panggil fungsi jam langsung di awal halaman dimuat
-  updateLiveClock();
+  async function fetchBlastingData() {
+    try {
+        const response = await fetch(REPO_URL);
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        const lines = data.body.split('\n');
+        let rawDate = "-- / -- / ----";
+        let rawTime = "--:--";
+        let rawLoc = "UNKNOWN LOCATION";
 
-  function checkSirenTime() {
-    updateLiveClock(); // Terus perbarui jam setiap detiknya
-
-    const timeElement = document.getElementById('blasting-time');
-    if (!timeElement) return;
-
-    const timeText = timeElement.textContent.trim();
-    const match = timeText.match(/(\d{2}):(\d{2})/);
-    if (!match) return;
-    
-    const targetHour = parseInt(match[1], 10);
-    const targetMinute = parseInt(match[2], 10);
-
-    const now = new Date();
-    const targetTime = new Date();
-    targetTime.setHours(targetHour, targetMinute, 0, 0);
-    
-    const sirenTime = new Date(targetTime.getTime() - 15000); 
-    const banner = document.getElementById('status-banner');
-
-    if (now < sirenTime) {
+        lines.forEach(line => {
+            const cleanLine = line.trim();
+            if(cleanLine.toUpperCase().startsWith("DATE:")) {
+                const parts = cleanLine.split(/:(.+)/);
+                if(parts[1]) rawDate = parts[1].trim();
+            }
+            if(cleanLine.toUpperCase().startsWith("TIME:")) {
+                const parts = cleanLine.split(/:(.+)/);
