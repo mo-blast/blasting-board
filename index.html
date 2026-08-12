@@ -261,13 +261,13 @@
     <div class="info-grid">
         <div class="info-box">
             <div class="label">DATE</div>
-            <!-- SEHARI-HARI SILAKAN GANTI TANGGAL DI BAWAH INI -->
+            <!-- SETIAP HARI ANDA CUKUP EDIT TANGGAL DI SINI LANGSUNG -->
             <div class="value" id="blasting-date">12 / 08 / 2026</div>
         </div>
 
         <div class="info-box">
             <div class="label">TARGET TIME</div>
-            <!-- SEHARI-HARI SILAKAN GANTI JAM DI BAWAH INI -->
+            <!-- SETIAP HARI ANDA CUKUP EDIT JAM DI SINI LANGSUNG -->
             <div class="value" id="blasting-time">16:30 WITA</div>
         </div>
 
@@ -278,12 +278,12 @@
 
         <div class="info-box full-width">
             <div class="label">LOCATION</div>
-            <!-- SEHARI-HARI SILAKAN GANTI LOKASI TAMBANG DI SINI -->
+            <!-- SETIAP HARI ANDA CUKUP EDIT LOKASI DI SINI LANGSUNG -->
             <div class="location-value" id="blasting-location">LEMBO EAST QUARRY</div>
         </div>
     </div>
 
-    <!-- DYNAMIC STATUS PANEL -->
+    <!-- MOOD STATUS PANEL -->
     <div class="status-panel" id="status-banner">
         SYSTEM ACTIVE
     </div>
@@ -295,8 +295,6 @@
 <script>
   const audio = new Audio('sirine.mp3');
   let played = false;
-  
-  const REPO_URL = "https://github.com";
 
   function updateLiveClock() {
     const now = new Date();
@@ -310,16 +308,21 @@
     }
   }
 
-  async function fetchBlastingData() {
-    try {
-        const response = await fetch(REPO_URL);
-        if (!response.ok) return;
-        const data = await response.json();
-        
-        const lines = data.body.split('\n');
-        lines.forEach(line => {
-            const cleanLine = line.trim();
-            if(cleanLine.toUpperCase().startsWith("DATE:")) {
-                document.getElementById('blasting-date').textContent = cleanLine.replace(/DATE:/i, '').trim();
-            }
-            if(cleanLine.toUpperCase().startsWith("TIME:")) {
+  // Jam digital live langsung diputar independen 100% tanpa internet
+  setInterval(updateLiveClock, 500);
+
+  function checkSirenTime() {
+    const timeElement = document.getElementById('blasting-time');
+    if (!timeElement) return;
+
+    const timeText = timeElement.textContent.trim();
+    const match = timeText.match(/(\d{2}):(\d{2})/);
+    if (!match) return;
+    
+    const targetHour = parseInt(match[10], 10);
+    const targetMinute = parseInt(match[11], 10);
+
+    const now = new Date();
+    const targetTime = new Date();
+    targetTime.setHours(targetHour, targetMinute, 0, 0);
+    
