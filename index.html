@@ -261,12 +261,12 @@
     <div class="info-grid">
         <div class="info-box">
             <div class="label">DATE</div>
-            <div class="value" id="blasting-date">-- / -- / ----</div>
+            <div class="value" id="blasting-date">12 / 08 / 2026</div>
         </div>
 
         <div class="info-box">
             <div class="label">TARGET TIME</div>
-            <div class="value" id="blasting-time">--:-- WITA</div>
+            <div class="value" id="blasting-time">16:30 WITA</div>
         </div>
 
         <div class="info-box live-clock-box">
@@ -276,7 +276,7 @@
 
         <div class="info-box full-width">
             <div class="label">LOCATION</div>
-            <div class="location-value" id="blasting-location">--</div>
+            <div class="location-value" id="blasting-location">LEMBO EAST QUARRY</div>
         </div>
     </div>
 
@@ -293,8 +293,7 @@
   const audio = new Audio('sirine.mp3');
   let played = false;
   
-  // SOLUSI TOTAL KEAMANAN: Membaca repositori publik via tautan mentah tanpa blokir CORS API
-  const RAW_ISSUE_URL = "https://github.com";
+  const REPO_URL = "https://github.com";
 
   function updateLiveClock() {
     const now = new Date();
@@ -309,17 +308,17 @@
   }
 
   async function fetchBlastingData() {
-    // Skenario agen pemintas otentikasi header agar tidak diblokir pihak ketiga browser HP
-    const headers = new Headers({
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-    });
-
     try {
-        const response = await fetch(RAW_ISSUE_URL, { method: 'GET', headers: headers });
-        if (!response.ok) throw new Error("CORS Network Restrict");
+        const response = await fetch(REPO_URL);
+        if (!response.ok) return;
         const data = await response.json();
         
         const lines = data.body.split('\n');
-        let rawDate = "12 / 08 / 2026";
-        let rawTime = "16:30";
+        lines.forEach(line => {
+            const cleanLine = line.trim();
+            if(cleanLine.toUpperCase().startsWith("DATE:")) {
+                document.getElementById('blasting-date').textContent = cleanLine.replace(/DATE:/i, '').trim();
+            }
+            if(cleanLine.toUpperCase().startsWith("TIME:")) {
+                let t = cleanLine.replace(/TIME:/i, '').trim();
+                document.getElementById('blasting-time').textContent = t.toUpperCase().includes("WITA") ? t : t + " WITA";
