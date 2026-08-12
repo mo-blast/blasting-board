@@ -261,13 +261,13 @@
     <div class="info-grid">
         <div class="info-box">
             <div class="label">DATE</div>
-            <!-- BISA DIUBAH MANUAL DI SINI SETIAP HARI -->
+            <!-- SEHARI-HARI SILAKAN GANTI TANGGAL DI BAWAH INI -->
             <div class="value" id="blasting-date">12 / 08 / 2026</div>
         </div>
 
         <div class="info-box">
             <div class="label">TARGET TIME</div>
-            <!-- BISA DIUBAH MANUAL DI SINI SETIAP HARI -->
+            <!-- SEHARI-HARI SILAKAN GANTI JAM DI BAWAH INI -->
             <div class="value" id="blasting-time">16:30 WITA</div>
         </div>
 
@@ -278,12 +278,12 @@
 
         <div class="info-box full-width">
             <div class="label">LOCATION</div>
-            <!-- BISA DIUBAH MANUAL DI SINI SETIAP HARI -->
+            <!-- SEHARI-HARI SILAKAN GANTI LOKASI TAMBANG DI SINI -->
             <div class="location-value" id="blasting-location">LEMBO EAST QUARRY</div>
         </div>
     </div>
 
-    <!-- STATUS PANEL -->
+    <!-- DYNAMIC STATUS PANEL -->
     <div class="status-panel" id="status-banner">
         SYSTEM ACTIVE
     </div>
@@ -295,6 +295,8 @@
 <script>
   const audio = new Audio('sirine.mp3');
   let played = false;
+  
+  const REPO_URL = "https://github.com";
 
   function updateLiveClock() {
     const now = new Date();
@@ -308,22 +310,16 @@
     }
   }
 
-  // Jam digital live langsung berjalan otomatis secara internal offline
-  setInterval(updateLiveClock, 500);
-
-  function checkSirenTime() {
-    const timeElement = document.getElementById('blasting-time');
-    if (!timeElement) return;
-
-    const timeText = timeElement.textContent.trim();
-    const match = timeText.match(/(\d{2}):(\d{2})/);
-    if (!match) return;
-    
-    const targetHour = parseInt(match, 10);
-    const targetMinute = parseInt(match, 10);
-
-    const now = new Date();
-    const targetTime = new Date();
-    targetTime.setHours(targetHour, targetMinute, 0, 0);
-    
-    const sirenTime = new Date(targetTime.getTime() - 15000); 
+  async function fetchBlastingData() {
+    try {
+        const response = await fetch(REPO_URL);
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        const lines = data.body.split('\n');
+        lines.forEach(line => {
+            const cleanLine = line.trim();
+            if(cleanLine.toUpperCase().startsWith("DATE:")) {
+                document.getElementById('blasting-date').textContent = cleanLine.replace(/DATE:/i, '').trim();
+            }
+            if(cleanLine.toUpperCase().startsWith("TIME:")) {
