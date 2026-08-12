@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PT Vale Indonesia - Digital Blasting Board</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #072214 0%, #03110a 100%);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(46, 204, 113, 0.03);
+            border-radius: 50%;
+            filter: blur(120px);
+            top: -10%; right: -10%;
+            pointer-events: none;
+        }
+
+        /* Main Container */
+        .container {
+            width: 100%;
+            max-width: 1150px;
+            background: rgba(10, 31, 20, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+        }
+
+        /* Header Area Flexbox */
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 25px;
+            gap: 25px;
+        }
+
+        .marquee-wrapper {
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
+
+        .running-text {
+            display: inline-block;
+            font-size: 3.2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: jalan 15s linear infinite;
+        }
+
+        .running-text .main-title {
+            color: #ffffff;
+            text-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            margin-right: 15px;
+        }
+
+        .running-text .sub-title {
+            color: #6a8573;
+            font-size: 2.2rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            margin-right: 40px;
+        }
+
+        @keyframes jalan {
+            0% { transform: translate3d(100%, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* Logo Box */
+        .brand-logo {
+            height: 65px;
+            width: 160px;
+            background: #ffffff;
+            padding: 10px 14px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .brand-logo img {
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+        }
+
+        /* Info Grid - 3 Columns Layout */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr;
+            gap: 20px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 26px 30px;
+            border-radius: 20px;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.02);
+        }
+
+        .full-width {
+            grid-column: span 3;
+            border-left: 5px solid #f1c40f;
+            background: linear-gradient(90deg, rgba(241, 196, 15, 0.03) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .label {
+            font-size: 0.85rem;
+            color: #8fa896;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .value {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Live Clock Highlight Style */
+        .live-clock-box {
+            border: 1px solid rgba(46, 204, 113, 0.2);
+            background: rgba(46, 204, 113, 0.02);
+        }
+
+        .live-clock-box .label {
+            color: #2ecc71;
+        }
+
+        .live-value {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #2ecc71;
+            text-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+            margin-top: 8px;
+            font-family: monospace;
+        }
+
+        .location-value {
+            color: #f1c40f;
+            font-size: 2.6rem;
+            font-weight: 700;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 30px rgba(241, 196, 15, 0.15);
+        }
+
+        /* Dynamic Status Panel */
+        .status-panel {
+            color: #ffffff;
+            padding: 22px;
+            border-radius: 18px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Test Button */
+        .test-audio-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #435749;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .test-audio-btn:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        @media (max-width: 900px) {
+            .info-grid { grid-template-columns: 1fr; gap: 15px; }
+            .full-width { grid-column: span 1; }
+            body { padding: 15px; }
+            .container { padding: 25px; gap: 20px; border-radius: 20px; }
+            .header-area { flex-direction: column-reverse; gap: 20px; padding-bottom: 20px; }
+            .brand-logo { width: 130px; height: 52px; }
+            .marquee-wrapper { width: 100%; }
+            .running-text { font-size: 2rem; }
+            .running-text .sub-title { font-size: 1.4rem; }
+            .value, .live-value, .location-value { font-size: 2.1rem; }
+            .status-panel { font-size: 1.2rem; padding: 18px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- HEADER AREA -->
+    <div class="header-area">
+        <div class="marquee-wrapper">
+            <div class="running-text">
+                <span class="main-title">BLASTING</span> 
+                <span class="sub-title">• BLASTING SCHEDULE •</span>
+                <span class="main-title">BLASTING</span> 
+                <span class="sub-title">• BLASTING SCHEDULE •</span>
+            </div>
+        </div>
+        <div class="brand-logo">
+            <img src="logo-vale.png" alt="PT Vale Logo">
+        </div>
+    </div>
+
+    <!-- DATA PANEL -->
+    <div class="info-grid">
+        <div class="info-box">
+            <div class="label">DATE</div>
+            <div class="value">12 / 08 / 2026</div>
+        </div>
+
+        <div class="info-box">
+            <div class="label">TARGET TIME</div>
+            <div class="value" id="blasting-time">16:30 WITA</div>
+        </div>
+
+        <div class="info-box live-clock-box">
+            <div class="label">CURRENT TIME</div>
+            <div class="live-value" id="live-clock">--:---- WITA</div>
+        </div>
+
+        <div class="info-box full-width">
+            <div class="label">LOCATION</div>
+            <div class="location-value">LEMBO EAST QUARRY</div>
+        </div>
+    </div>
+
+    <!-- MOOD STATUS PANEL -->
+    <div class="status-panel" id="status-banner">
+        ✓ BLASTING COMPLETED / AREA CLEARED
+    </div>
+
+</div>
+
+<button class="test-audio-btn" onclick="testSiren()">🔊 TEST MANUAL SIREN</button>
+
+<script>
+  const audio = new Audio('sirine.mp3');
+  let played = false;
+
+  // Fungsi Jam Digital Live Real-Time
+  function updateLiveClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    const clockElement = document.getElementById('live-clock');
+    if (clockElement) {
+        clockElement.textContent = `${hours}:${minutes}:${seconds} WITA`;
+    }
+  }
+
+  // LANGKAH FIX: Panggil fungsi jam langsung di awal halaman dimuat
+  updateLiveClock();
+
+  function checkSirenTime() {
+    updateLiveClock(); // Terus perbarui jam setiap detiknya
+
+    const timeElement = document.getElementById('blasting-time');
+    if (!timeElement) return;
+
+    const timeText = timeElement.textContent.trim();
+    const match = timeText.match(/(\d{2}):(\d{2})/);
+    if (!match) return;
+    
+    const targetHour = parseInt(match[1], 10);
+    const targetMinute = parseInt(match[2], 10);
+
+    const now = new Date();
+    const targetTime = new Date();
+    targetTime.setHours(targetHour, targetMinute, 0, 0);
+    
+    const sirenTime = new Date(targetTime.getTime() - 15000); 
+    const banner = document.getElementById('status-banner');
+
+    if (now < sirenTime) {
