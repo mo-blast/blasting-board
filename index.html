@@ -261,11 +261,13 @@
     <div class="info-grid">
         <div class="info-box">
             <div class="label">DATE</div>
+            <!-- SILAKAN GANTI TANGGAL JADWAL HARIAN DI SINI -->
             <div class="value" id="blasting-date">12 / 08 / 2026</div>
         </div>
 
         <div class="info-box">
             <div class="label">TARGET TIME</div>
+            <!-- SILAKAN GANTI JAM JADWAL HARIAN DI SINI -->
             <div class="value" id="blasting-time">16:30 WITA</div>
         </div>
 
@@ -276,13 +278,14 @@
 
         <div class="info-box full-width">
             <div class="label">LOCATION</div>
+            <!-- SILAKAN GANTI LOKASI TAMBANG DI SINI -->
             <div class="location-value" id="blasting-location">LEMBO EAST QUARRY</div>
         </div>
     </div>
 
-    <!-- MOOD STATUS PANEL -->
+    <!-- STATUS PANEL -->
     <div class="status-panel" id="status-banner">
-        CONNECTING TO SYSTEM...
+        SYSTEM ACTIVE
     </div>
 
 </div>
@@ -320,5 +323,3 @@
                 document.getElementById('blasting-date').textContent = cleanLine.replace(/DATE:/i, '').trim();
             }
             if(cleanLine.toUpperCase().startsWith("TIME:")) {
-                let t = cleanLine.replace(/TIME:/i, '').trim();
-                document.getElementById('blasting-time').textContent = t.toUpperCase().includes("WITA") ? t : t + " WITA";
