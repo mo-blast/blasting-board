@@ -36,6 +36,7 @@
             pointer-events: none;
         }
 
+        /* Main Container */
         .container {
             width: 100%;
             max-width: 1150px;
@@ -52,6 +53,7 @@
             gap: 35px;
         }
 
+        /* Header Area Flexbox */
         .header-area {
             display: flex;
             justify-content: space-between;
@@ -97,6 +99,7 @@
             100% { transform: translate3d(-100%, 0, 0); }
         }
 
+        /* Logo Box */
         .brand-logo {
             height: 65px;
             width: 160px;
@@ -116,6 +119,7 @@
             object-fit: contain;
         }
 
+        /* Info Grid - 3 Columns Layout */
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1.2fr;
@@ -152,6 +156,7 @@
             letter-spacing: 0.5px;
         }
 
+        /* Live Clock Highlight Style */
         .live-clock-box {
             border: 1px solid rgba(46, 204, 113, 0.2);
             background: rgba(46, 204, 113, 0.02);
@@ -179,6 +184,7 @@
             text-shadow: 0 0 30px rgba(241, 196, 15, 0.15);
         }
 
+        /* Dynamic Status Panel */
         .status-panel {
             color: #ffffff;
             padding: 22px;
@@ -195,6 +201,7 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
         }
 
+        /* Test Button */
         .test-audio-btn {
             position: absolute;
             bottom: 20px;
@@ -208,6 +215,7 @@
             font-size: 0.7rem;
             font-weight: 600;
             letter-spacing: 1px;
+            transition: all 0.3s ease;
         }
 
         .test-audio-btn:hover {
@@ -233,6 +241,8 @@
 <body>
 
 <div class="container">
+    
+    <!-- HEADER AREA -->
     <div class="header-area">
         <div class="marquee-wrapper">
             <div class="running-text">
@@ -247,15 +257,18 @@
         </div>
     </div>
 
+    <!-- DATA PANEL -->
     <div class="info-grid">
         <div class="info-box">
             <div class="label">DATE</div>
-            <div class="value" id="blasting-date">12 / 08 / 2026</div>
+            <!-- EDIT DI SINI UNTUK GANTI TANGGAL -->
+            <div class="value" id="blasting-date">13 / 08 / 2026</div>
         </div>
 
         <div class="info-box">
             <div class="label">TARGET TIME</div>
-            <div class="value" id="blasting-time">16:30 WITA</div>
+            <!-- EDIT DI SINI UNTUK GANTI JAM -->
+            <div class="value" id="blasting-time">16:45 WITA</div>
         </div>
 
         <div class="info-box live-clock-box">
@@ -265,13 +278,16 @@
 
         <div class="info-box full-width">
             <div class="label">LOCATION</div>
-            <div class="location-value" id="blasting-location">LEMBO EAST QUARRY</div>
+            <!-- EDIT DI SINI UNTUK GANTI LOKASI TAMBANG -->
+            <div class="location-value" id="blasting-location">KONDE SOUTH 09</div>
         </div>
     </div>
 
+    <!-- MOOD STATUS PANEL -->
     <div class="status-panel" id="status-banner">
         SYSTEM ACTIVE
     </div>
+
 </div>
 
 <button class="test-audio-btn" onclick="testSiren()">🔊 TEST MANUAL SIREN</button>
@@ -280,17 +296,20 @@
   const audio = new Audio('sirine.mp3');
   let played = false;
 
+  // JALUR ISOLASI MANDIRI JAM DIGITAL (Murni Offline & Anti-Gagal)
   function updateLiveClock() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
+    
     const clockElement = document.getElementById('live-clock');
     if (clockElement) {
-        clockElement.textContent = `${hours}:${minutes}:${seconds} WITA`;
+        clockElement.textContent = hours + ":" + minutes + ":" + seconds + " WITA";
     }
   }
 
+  // Paksa jalankan mesin waktu digital independen per 500 milidetik
   setInterval(updateLiveClock, 500);
 
   function checkSirenTime() {
@@ -308,16 +327,3 @@
     const targetTime = new Date();
     targetTime.setHours(targetHour, targetMinute, 0, 0);
     
-    const sirenTime = new Date(targetTime.getTime() - 15000); 
-    const banner = document.getElementById('status-banner');
-
-    if (now < sirenTime) {
-      banner.style.background = "linear-gradient(135deg, #d35400 0%, #e67e22 100%)"; 
-      banner.style.boxShadow = "0 10px 30px rgba(211, 84, 0, 0.25)";
-      banner.innerHTML = "⚠️ BLASTING PREPARATION / AREA RESTRICTED";
-    } else if (now >= sirenTime && now < targetTime) {
-      if (!played) {
-        audio.play().catch(e => console.log("Audio connected."));
-        played = true;
-      }
-      banner.style.background = "linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)"; 
