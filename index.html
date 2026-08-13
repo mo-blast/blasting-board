@@ -39,7 +39,7 @@
         /* Main Container */
         .container {
             width: 100%;
-            max-width: 1150px;
+            max-width: 1100px;
             background: rgba(10, 31, 20, 0.65);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -53,7 +53,7 @@
             gap: 35px;
         }
 
-        /* Header Area Flexbox */
+        /* Header Area */
         .header-area {
             display: flex;
             justify-content: space-between;
@@ -119,11 +119,11 @@
             object-fit: contain;
         }
 
-        /* Info Grid - 3 Columns Layout */
+        /* Info Grid - 2 Columns Clean Layout */
         .info-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1.2fr;
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
         }
 
         .info-box {
@@ -135,7 +135,7 @@
         }
 
         .full-width {
-            grid-column: span 3;
+            grid-column: span 2;
             border-left: 5px solid #f1c40f;
             background: linear-gradient(90deg, rgba(241, 196, 15, 0.03) 0%, rgba(0,0,0,0) 100%);
         }
@@ -149,30 +149,11 @@
         }
 
         .value {
-            font-size: 2.4rem;
+            font-size: 2.6rem;
             font-weight: 700;
             color: #ffffff;
             margin-top: 8px;
             letter-spacing: 0.5px;
-        }
-
-        /* Live Clock Highlight Style */
-        .live-clock-box {
-            border: 1px solid rgba(46, 204, 113, 0.2);
-            background: rgba(46, 204, 113, 0.02);
-        }
-
-        .live-clock-box .label {
-            color: #2ecc71;
-        }
-
-        .live-value {
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: #2ecc71;
-            text-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
-            margin-top: 8px;
-            font-family: monospace;
         }
 
         .location-value {
@@ -215,7 +196,6 @@
             font-size: 0.7rem;
             font-weight: 600;
             letter-spacing: 1px;
-            transition: all 0.3s ease;
         }
 
         .test-audio-btn:hover {
@@ -223,9 +203,7 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
-        @media (max-width: 900px) {
-            .info-grid { grid-template-columns: 1fr; gap: 15px; }
-            .full-width { grid-column: span 1; }
+        @media (max-width: 650px) {
             body { padding: 15px; }
             .container { padding: 25px; gap: 20px; border-radius: 20px; }
             .header-area { flex-direction: column-reverse; gap: 20px; padding-bottom: 20px; }
@@ -233,7 +211,9 @@
             .marquee-wrapper { width: 100%; }
             .running-text { font-size: 2rem; }
             .running-text .sub-title { font-size: 1.4rem; }
-            .value, .live-value, .location-value { font-size: 2.1rem; }
+            .info-grid { grid-template-columns: 1fr; gap: 15px; }
+            .full-width { grid-column: span 1; }
+            .value, .location-value { font-size: 2.1rem; }
             .status-panel { font-size: 1.2rem; padding: 18px 12px; }
         }
     </style>
@@ -257,28 +237,23 @@
         </div>
     </div>
 
-    <!-- DATA PANEL -->
+    <!-- CLEAN DATA GRID -->
     <div class="info-grid">
         <div class="info-box">
             <div class="label">DATE</div>
-            <!-- EDIT DI SINI UNTUK GANTI TANGGAL -->
+            <!-- SEHARI-HARI EDIT TANGGAL DI SINI -->
             <div class="value" id="blasting-date">13 / 08 / 2026</div>
         </div>
 
         <div class="info-box">
             <div class="label">TARGET TIME</div>
-            <!-- EDIT DI SINI UNTUK GANTI JAM -->
+            <!-- SEHARI-HARI EDIT JAM DI SINI -->
             <div class="value" id="blasting-time">16:45 WITA</div>
-        </div>
-
-        <div class="info-box live-clock-box">
-            <div class="label">CURRENT TIME</div>
-            <div class="live-value" id="live-clock">--:--:-- WITA</div>
         </div>
 
         <div class="info-box full-width">
             <div class="label">LOCATION</div>
-            <!-- EDIT DI SINI UNTUK GANTI LOKASI TAMBANG -->
+            <!-- SEHARI-HARI EDIT LOKASI DI SINI -->
             <div class="location-value" id="blasting-location">KONDE SOUTH 09</div>
         </div>
     </div>
@@ -296,21 +271,10 @@
   const audio = new Audio('sirine.mp3');
   let played = false;
 
-  // JALUR ISOLASI MANDIRI JAM DIGITAL (Murni Offline & Anti-Gagal)
-  function updateLiveClock() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    
-    const clockElement = document.getElementById('live-clock');
-    if (clockElement) {
-        clockElement.textContent = hours + ":" + minutes + ":" + seconds + " WITA";
-    }
-  }
-
-  // Paksa jalankan mesin waktu digital independen per 500 milidetik
-  setInterval(updateLiveClock, 500);
+  // FITUR BARU: Otomatis memuat ulang halaman setiap 10 detik agar perubahan dari HP langsung masuk ke TV
+  setTimeout(function(){
+     location.reload();
+  }, 10000);
 
   function checkSirenTime() {
     const timeElement = document.getElementById('blasting-time');
@@ -327,3 +291,30 @@
     const targetTime = new Date();
     targetTime.setHours(targetHour, targetMinute, 0, 0);
     
+    const sirenTime = new Date(targetTime.getTime() - 15000); 
+    const banner = document.getElementById('status-banner');
+
+    if (now < sirenTime) {
+      banner.style.background = "linear-gradient(135deg, #d35400 0%, #e67e22 100%)"; 
+      banner.style.boxShadow = "0 10px 30px rgba(211, 84, 0, 0.25)";
+      banner.innerHTML = "⚠️ BLASTING PREPARATION / AREA RESTRICTED";
+    } else if (now >= sirenTime && now < targetTime) {
+      if (!played) {
+        audio.play().catch(e => console.log("Audio sequence enabled."));
+        played = true;
+      }
+      banner.style.background = "linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)"; 
+      banner.style.boxShadow = "0 10px 30px rgba(192, 57, 43, 0.4)";
+      banner.innerHTML = "🚨 SIREN ACTIVE! 15 SECONDS BEFORE BLASTING 🚨";
+    } else if (now >= targetTime) {
+      banner.style.background = "linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)"; 
+      banner.style.boxShadow = "0 10px 30px rgba(39, 174, 96, 0.25)";
+      banner.innerHTML = "✓ BLASTING COMPLETED / AREA CLEARED";
+    }
+  }
+
+  setInterval(checkSirenTime, 1000);
+
+  function testSiren() {
+    audio.currentTime = 0; 
+    audio.play()
