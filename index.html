@@ -53,7 +53,7 @@
             gap: 35px;
         }
 
-        /* Header Area Kunci Statis Super Mewah */
+        /* Header Area dengan Kotak Pembatas Marquee */
         .header-area {
             display: flex;
             justify-content: space-between;
@@ -63,28 +63,41 @@
             gap: 25px;
         }
 
-        .header-title-container {
+        .marquee-wrapper {
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
             display: flex;
-            align-items: baseline;
-            gap: 15px;
-            flex-wrap: wrap;
+            align-items: center;
         }
 
-        .main-title {
-            font-size: 3.2rem;
-            font-weight: 900;
+        /* Trik Perbaikan: Efek Meluncur Kontinu Tanpa Putus */
+        .running-text {
+            display: inline-block;
+            font-size: 2.8rem; /* Sedikit disesuaikan agar proporsional saat bergerak */
+            font-weight: 800;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: #ffffff;
-            text-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+            animation: jalan-kontinu 12s linear infinite;
         }
 
-        .sub-title {
+        .running-text .main-title {
+            color: #ffffff;
+            text-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            margin-right: 15px;
+        }
+
+        .running-text .sub-title {
             color: #6a8573;
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             font-weight: 500;
             letter-spacing: 1px;
-            text-transform: uppercase;
+            margin-right: 60px; /* Jarak antar kalimat */
+        }
+
+        @keyframes jalan-kontinu {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
         }
 
         /* Logo Box */
@@ -98,7 +111,7 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 8px 24 rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }
 
         .brand-logo img {
@@ -107,7 +120,7 @@
             object-fit: contain;
         }
 
-        /* Info Grid Layout */
+        /* Info Grid - 2 Columns Layout */
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -192,10 +205,13 @@
         }
 
         @media (max-width: 768px) {
-            .header-area { flex-direction: column-reverse; align-items: center; gap: 15px; }
-            .header-title-container { justify-content: center; text-align: center; flex-direction: column; align-items: center; gap: 5px; }
-            .main-title { font-size: 2.4rem; }
-            .sub-title { font-size: 1.2rem; }
+            body { padding: 15px; }
+            .container { padding: 25px; gap: 20px; border-radius: 20px; }
+            .header-area { flex-direction: column-reverse; gap: 15px; padding-bottom: 20px; }
+            .brand-logo { width: 130px; height: 52px; }
+            .marquee-wrapper { width: 100%; }
+            .running-text { font-size: 2rem; }
+            .running-text .sub-title { font-size: 1.2rem; }
             .info-grid { grid-template-columns: 1fr; gap: 15px; }
             .full-width { grid-column: span 1; }
             .value, .location-value { font-size: 2.1rem; }
@@ -207,11 +223,13 @@
 
 <div class="container">
     
-    <!-- HEADER AREA STATIS ANTI-HILANG -->
+    <!-- HEADER AREA DENGAN REKAYASA TEKS BERJALAN GANDA -->
     <div class="header-area">
-        <div class="header-title-container">
-            <span class="main-title">BLASTING</span> 
-            <span class="sub-title">• BLASTING SCHEDULE •</span>
+        <div class="marquee-wrapper">
+            <div class="running-text">
+                <span class="main-title">BLASTING</span><span class="sub-title">• BLASTING SCHEDULE •</span>
+                <span class="main-title">BLASTING</span><span class="sub-title">• BLASTING SCHEDULE •</span>
+            </div>
         </div>
         <div class="brand-logo">
             <img src="logo-vale.png" alt="PT Vale Logo">
@@ -222,24 +240,21 @@
     <div class="info-grid">
         <div class="info-box">
             <div class="label">DATE</div>
-            <!-- EDIT JADWAL TANGGAL DI SINI -->
             <div class="value" id="blasting-date">13 / 08 / 2026</div>
         </div>
 
         <div class="info-box">
             <div class="label">TARGET TIME</div>
-            <!-- EDIT JADWAL JAM DI SINI -->
             <div class="value" id="blasting-time">16:45 WITA</div>
         </div>
 
         <div class="info-box full-width">
             <div class="label">LOCATION</div>
-            <!-- EDIT JADWAL LOKASI DI SINI -->
             <div class="location-value" id="blasting-location">KONDE SOUTH 09</div>
         </div>
     </div>
 
-    <!-- MOOD STATUS PANEL -->
+    <!-- DYNAMIC STATUS PANEL -->
     <div class="status-panel" id="status-banner">
         SYSTEM ACTIVE
     </div>
@@ -252,7 +267,7 @@
   const audio = new Audio('sirine.mp3');
   let played = false;
 
-  // Layar otomatis me-refresh dirinya sendiri setiap 10 detik agar sinkronisasi HP lancar
+  // Auto-reload konstan setiap 10 detik agar sinkronisasi HP lancar [1]
   setTimeout(function(){
      location.reload();
   }, 10000);
@@ -265,8 +280,8 @@
     const match = timeText.match(/(\d{2}):(\d{2})/);
     if (!match) return;
     
-    const targetHour = parseInt(match[10]);
-    const targetMinute = parseInt(match[10]);
+    const targetHour = parseInt(match[1], 10);
+    const targetMinute = parseInt(match[2], 10);
 
     const now = new Date();
     const targetTime = new Date();
@@ -281,7 +296,7 @@
       banner.innerHTML = "⚠️ BLASTING PREPARATION / AREA RESTRICTED";
     } else if (now >= sirenTime && now < targetTime) {
       if (!played) {
-        audio.play().catch(e => console.log("Audio target enabled."));
+        audio.play().catch(e => console.log("Audio sequence enabled."));
         played = true;
       }
       banner.style.background = "linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)"; 
@@ -299,10 +314,3 @@
   function testSiren() {
     audio.currentTime = 0; 
     audio.play()
-      .then(() => alert("Siren peripheral connection verified successfully."))
-      .catch(err => alert("Audio stream error. Check file named 'sirine.mp3'."));
-  }
-</script>
-
-</body>
-</html>
