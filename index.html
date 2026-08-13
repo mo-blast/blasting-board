@@ -53,7 +53,7 @@
             gap: 35px;
         }
 
-        /* Header Area dengan Kotak Pembatas Marquee */
+        /* Header Area */
         .header-area {
             display: flex;
             justify-content: space-between;
@@ -61,43 +61,35 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding-bottom: 25px;
             gap: 25px;
+            overflow: hidden;
         }
 
-        .marquee-wrapper {
+        .marquee-container {
             flex: 1;
             overflow: hidden;
-            white-space: nowrap;
             display: flex;
             align-items: center;
         }
 
-        /* Trik Perbaikan: Efek Meluncur Kontinu Tanpa Putus */
-        .running-text {
-            display: inline-block;
-            font-size: 2.8rem; /* Sedikit disesuaikan agar proporsional saat bergerak */
+        /* Style Teks Marquee HTML */
+        .running-text-marquee {
+            font-size: 3.2rem;
             font-weight: 800;
             letter-spacing: 2px;
             text-transform: uppercase;
-            animation: jalan-kontinu 12s linear infinite;
+            color: #ffffff;
         }
 
-        .running-text .main-title {
+        .running-text-marquee .main-title {
             color: #ffffff;
             text-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
-            margin-right: 15px;
         }
 
-        .running-text .sub-title {
+        .running-text-marquee .sub-title {
             color: #6a8573;
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: 500;
             letter-spacing: 1px;
-            margin-right: 60px; /* Jarak antar kalimat */
-        }
-
-        @keyframes jalan-kontinu {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-50%, 0, 0); }
         }
 
         /* Logo Box */
@@ -209,9 +201,9 @@
             .container { padding: 25px; gap: 20px; border-radius: 20px; }
             .header-area { flex-direction: column-reverse; gap: 15px; padding-bottom: 20px; }
             .brand-logo { width: 130px; height: 52px; }
-            .marquee-wrapper { width: 100%; }
-            .running-text { font-size: 2rem; }
-            .running-text .sub-title { font-size: 1.2rem; }
+            .marquee-container { width: 100%; }
+            .running-text-marquee { font-size: 2.2rem; }
+            .running-text-marquee .sub-title { font-size: 1.4rem; }
             .info-grid { grid-template-columns: 1fr; gap: 15px; }
             .full-width { grid-column: span 1; }
             .value, .location-value { font-size: 2.1rem; }
@@ -223,13 +215,12 @@
 
 <div class="container">
     
-    <!-- HEADER AREA DENGAN REKAYASA TEKS BERJALAN GANDA -->
+    <!-- HEADER AREA DENGAN TAG MARQUEE ASLI -->
     <div class="header-area">
-        <div class="marquee-wrapper">
-            <div class="running-text">
-                <span class="main-title">BLASTING</span><span class="sub-title">• BLASTING SCHEDULE •</span>
-                <span class="main-title">BLASTING</span><span class="sub-title">• BLASTING SCHEDULE •</span>
-            </div>
+        <div class="marquee-container">
+            <marquee class="running-text-marquee" scrollamount="6" behavior="scroll" direction="left">
+                <span class="main-title">BLASTING</span> <span class="sub-title">• BLASTING SCHEDULE •</span>
+            </marquee>
         </div>
         <div class="brand-logo">
             <img src="logo-vale.png" alt="PT Vale Logo">
@@ -263,11 +254,11 @@
 
 <button class="test-audio-btn" onclick="testSiren()">🔊 TEST MANUAL SIREN</button>
 
-<script>
+<script {nonce}>
   const audio = new Audio('sirine.mp3');
   let played = false;
 
-  // Auto-reload konstan setiap 10 detik agar sinkronisasi HP lancar [1]
+  // Auto-reload setiap 10 detik agar sinkronisasi HP lancar
   setTimeout(function(){
      location.reload();
   }, 10000);
@@ -280,8 +271,8 @@
     const match = timeText.match(/(\d{2}):(\d{2})/);
     if (!match) return;
     
-    const targetHour = parseInt(match[1], 10);
-    const targetMinute = parseInt(match[2], 10);
+    const targetHour = parseInt(match, 10);
+    const targetMinute = parseInt(match, 10);
 
     const now = new Date();
     const targetTime = new Date();
@@ -314,3 +305,10 @@
   function testSiren() {
     audio.currentTime = 0; 
     audio.play()
+      .then(() => alert("Siren peripheral connection verified successfully."))
+      .catch(err => alert("Audio stream error. Check file named 'sirine.mp3'."));
+  }
+</script>
+
+</body>
+</html>
