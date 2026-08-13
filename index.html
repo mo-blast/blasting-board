@@ -171,7 +171,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s ease;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
         }
 
@@ -215,7 +215,7 @@
 
 <div class="container">
     
-    <!-- HEADER AREA DENGAN TAG MARQUEE ASLI -->
+    <!-- HEADER AREA MARQUEE -->
     <div class="header-area">
         <div class="marquee-container">
             <marquee class="running-text-marquee" scrollamount="6" behavior="scroll" direction="left">
@@ -247,21 +247,16 @@
 
     <!-- DYNAMIC STATUS PANEL -->
     <div class="status-panel" id="status-banner">
-        SYSTEM ACTIVE
+        CHECKING TIME...
     </div>
 
 </div>
 
 <button class="test-audio-btn" onclick="testSiren()">🔊 TEST MANUAL SIREN</button>
 
-<script {nonce}>
+<script>
   const audio = new Audio('sirine.mp3');
   let played = false;
-
-  // Auto-reload setiap 10 detik agar sinkronisasi HP lancar
-  setTimeout(function(){
-     location.reload();
-  }, 10000);
 
   function checkSirenTime() {
     const timeElement = document.getElementById('blasting-time');
@@ -271,8 +266,8 @@
     const match = timeText.match(/(\d{2}):(\d{2})/);
     if (!match) return;
     
-    const targetHour = parseInt(match, 10);
-    const targetMinute = parseInt(match, 10);
+    const targetHour = parseInt(match[10] ? match : match, 10);
+    const targetMinute = parseInt(match[10] ? match : match, 10);
 
     const now = new Date();
     const targetTime = new Date();
@@ -300,7 +295,14 @@
     }
   }
 
+  // LANGKAH PENGUNCIAN UTAMA: Paksa jalankan logika warna di detik paling pertama
+  checkSirenTime();
   setInterval(checkSirenTime, 1000);
+
+  // Auto-reload setiap 10 detik agar sinkronisasi input HP nirkabel lancar
+  setTimeout(function(){
+     location.reload();
+  }, 10000);
 
   function testSiren() {
     audio.currentTime = 0; 
