@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vale Blasting Dashboard - Realtime Live Sync</title>
+    <!-- Memanggil Server Database Pemancar Sinyal Online Gratis -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #121212; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; gap: 20px; padding: 20px; }
-        
-        /* Container Utama Merah Dasbor */
         .dashboard-container { background: linear-gradient(135deg, #4a0000 0%, #2b0000 100%); border: 2px solid #7a0000; border-radius: 20px; width: 100%; max-width: 750px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); color: #ffffff; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; }
         .marquee-container { flex-grow: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 8px; }
@@ -16,39 +16,32 @@
         .marquee-text h1 { font-size: 28px; font-weight: 800; display: inline; text-shadow: 0 0 10px rgba(255,255,255,0.6); }
         .marquee-text span { color: #8a7a7a; font-size: 16px; margin-left: 15px; font-weight: 600; letter-spacing: 2px; }
         @keyframes marquee { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-        
-        /* Logo Kontainer */
         .logo-box { background-color: #ffffff; padding: 6px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); flex-shrink: 0; }
         .logo-box img { height: 28px; width: auto; display: block; }
-        
-        /* Tata Letak Data */
         .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
         .info-card { background-color: rgba(20, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px 20px; }
         .label { color: #8a7a7a; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .value { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
-        
-        /* Bagian Lokasi */
+        .value { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
         .location-card { background: linear-gradient(to right, rgba(40,0,0,0.8), rgba(20,0,0,0.4)); border-left: 5px solid #ffcc00; border-radius: 4px 12px 12px 4px; padding: 20px; margin-bottom: 25px; }
         .location-value { color: #ffcc00; font-size: 28px; font-weight: 700; }
         .alert-banner { background-color: #e67e22; color: #ffffff; text-align: center; padding: 15px; border-radius: 10px; font-weight: 700; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; animation: blinker 1.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.4; } }
-        
         .audio-btn { background-color: #222; color: #bbb; border: 1px solid #444; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; }
         
-        /* PANEL INPUT SINKRONISASI JALUR LINK HP (Formulir Pengubah Jadwal) */
-        .admin-panel { background-color: #1e1e1e; border: 1px solid #333; padding: 25px; border-radius: 15px; width: 100%; max-width: 750px; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .admin-panel h3 { margin-bottom: 15px; color: #ffcc00; font-size: 18px; text-transform: uppercase; text-align: center;}
+        /* Panel Input Khusus Admin HP */
+        .admin-panel { background-color: #1e1e1e; border: 1px solid #333; padding: 20px; border-radius: 12px; width: 100%; max-width: 750px; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .admin-panel h3 { margin-bottom: 15px; color: #ffcc00; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-align: center;}
         .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
         .form-group label { color: #bbb; font-size: 13px; font-weight: bold;}
         .form-group input { padding: 12px; background-color: #2b2b2b; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 15px; }
-        .submit-btn { background-color: #00828A; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 15px; text-transform: uppercase; }
+        .submit-btn { background-color: #00828A; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
     <audio id="sirineAudio" src="sirine.mp3" loop></audio>
 
-    <!-- 1. TAMPILAN LAYAR UTAMA MONITOR LAPANGAN -->
+    <!-- TAMPILAN MONITOR UTAMA -->
     <div class="dashboard-container" id="main-dash">
         <div class="header">
             <div class="marquee-container">
@@ -85,68 +78,64 @@
 
     <button class="audio-btn" id="audio-control" onclick="togglePlay()">🔊 Aktifkan Sirine</button>
 
-    <!-- 2. FORMULIR INPUT RAHASIA KHUSUS DI HP ANDA -->
+    <!-- PANEL INPUT CONTROL VIA HP -->
     <div class="admin-panel" id="hp-panel">
         <h3>Pembaruan Jadwal Blasting (Remote HP)</h3>
-        <form onsubmit="updateData(event)">
+        <form onsubmit="sendDataToCloud(event)">
             <div class="form-group">
                 <label>Tanggal Baru</label>
-                <input type="text" id="inp-date" required>
+                <input type="text" id="inp-date" placeholder="Contoh: 19 / 08 / 2026" required>
             </div>
             <div class="form-group">
                 <label>Jam Target Baru</label>
-                <input type="text" id="inp-time" required>
+                <input type="text" id="inp-time" placeholder="Contoh: 14.45 WITA" required>
             </div>
             <div class="form-group">
                 <label>Lokasi Baru</label>
-                <input type="text" id="inp-location" required>
+                <input type="text" id="inp-location" placeholder="Contoh: Harapan" required>
             </div>
             <button type="submit" class="submit-btn">KIRIM KE MONITOR UTAMA</button>
         </form>
     </div>
 
     <script>
-        // Menggunakan LocalStorage internal yang disinkronkan antar tab Vercel secara live
-        function loadActiveData() {
-            if(localStorage.getItem('vale_date')) {
-                document.getElementById('lbl-date').innerText = localStorage.getItem('vale_date');
-                document.getElementById('lbl-time').innerText = localStorage.getItem('vale_time');
-                document.getElementById('lbl-location').innerText = localStorage.getItem('vale_location');
-            }
-        }
+        // Mengaktifkan Antena Pemancar Database Online Global
+        const gun = Gun(['https://herokuapp.com']);
+        const blastingNode = gun.get('vale_blasting_mo_blast_2026');
 
-        // Eksekusi fungsi ketika menekan tombol KIRIM dari HP Anda
-        function updateData(e) {
+        // Monitor Lapangan Otomatis Mendengarkan Perubahan Data secara Live Global (0 Detik)
+        blastingNode.on(function(data) {
+            if(data.date) document.getElementById('lbl-date').innerText = data.date;
+            if(data.time) document.getElementById('lbl-time').innerText = data.time;
+            if(data.location) document.getElementById('lbl-location').innerText = data.location;
+            
+            // Simpan juga di form HP agar isinya sinkron saat dibuka kembali
+            if(document.getElementById('hp-panel').style.display === 'block') {
+                document.getElementById('inp-date').value = data.date;
+                document.getElementById('inp-time').value = data.time;
+                document.getElementById('inp-location').value = data.location;
+            }
+        });
+
+        // Fungsi saat Anda menekan tombol KIRIM dari HP Anda
+        function sendDataToCloud(e) {
             e.preventDefault();
             const d = document.getElementById('inp-date').value;
             const t = document.getElementById('inp-time').value;
             const l = document.getElementById('inp-location').value;
 
-            localStorage.setItem('vale_date', d);
-            localStorage.setItem('vale_time', t);
-            localStorage.setItem('vale_location', l);
-
-            alert("Jadwal Berhasil Diperbarui! Silakan periksa Layar Monitor Lapangan Anda.");
+            // Tembakkan data ke satelit cloud agar langsung menyebar ke semua monitor
+            blastingNode.put({ date: d, time: t, location: l });
+            alert("Data Berhasil Dikirim ke Monitor Utama!");
         }
 
-        // Otomatis mendeteksi pembaruan data antar perangkat secara instan (0 detik)
-        window.addEventListener('storage', loadActiveData);
-
-        // MEMBAGI LAYAR: Jika alamat tautan diakhiri kata '?admin' maka formulir input HP akan muncul
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('admin')) {
+        // FILTER TAMPILAN: Jika link di HP Anda berakhiran '?admin'
+        if (window.location.search.includes('admin')) {
             document.getElementById('hp-panel').style.display = 'block';
             document.getElementById('main-dash').style.display = 'none';
             document.getElementById('audio-control').style.display = 'none';
             document.body.style.backgroundColor = '#1a1a1a';
-
-            // Memuat teks aktif agar tidak perlu mengetik ulang dari awal di HP
-            document.getElementById('inp-date').value = document.getElementById('lbl-date').innerText;
-            document.getElementById('inp-time').value = document.getElementById('lbl-time').innerText;
-            document.getElementById('inp-location').value = document.getElementById('lbl-location').innerText;
         }
-
-        loadActiveData();
 
         function togglePlay() {
             var audio = document.getElementById("sirineAudio");
