@@ -1,9 +1,17 @@
-// 1. SISTEM INSTAN CACHE & DEFAULT DATA
-const defaultData = {
-    date: "19 / 08 / 2026",
-    time: "14.45 WITA",
-    location: "Harapan West Quary"
-};
+    <!-- Elemen tombol sirine paling bawah -->
+    <button class="audio-btn" id="audio-control" onclick="togglePlay()">🔊 Aktifkan Sirine</button>
+
+    <!-- Pindahkan Pustaka GunDB ke sini agar tidak memblokir tampilan visual -->
+    <script src="https://jsdelivr.net"></script>
+
+    <!-- Script logika utama Anda -->
+    <script>
+        const defaultData = {
+            date: "19 / 08 / 2026",
+            time: "14.45 WITA",
+            location: "Harapan West Quary"
+        };
+        // ... (Sisa kode skrip utama Anda di bawahnya) ...
 
 // Ambil data cadangan dari memori browser agar loading 0 detik
 const localCached = localStorage.getItem('vale_blasting_local');
