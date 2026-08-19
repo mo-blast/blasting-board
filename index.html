@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vale Blasting Dashboard - Realtime Live Sync</title>
     
-    <!-- FIX 1: Memanggil pustaka GunDB yang valid dan super ringan -->
+    <!-- Pustaka GunDB Resmi -->
     <script src="https://jsdelivr.net"></script>
     
     <style>
@@ -30,13 +30,13 @@
         @keyframes blinker { 50% { opacity: 0.4; } }
         .audio-btn { background-color: #222; color: #bbb; border: 1px solid #444; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; }
         
-        /* Panel Input Khusus Admin HP */
-        .admin-panel { background-color: #1e1e1e; border: 1px solid #333; padding: 20px; border-radius: 12px; width: 100%; max-width: 750px; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .admin-panel h3 { margin-bottom: 15px; color: #ffcc00; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-align: center;}
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        /* Panel Input Khusus Admin */
+        .admin-panel { background-color: #1e1e1e; border: 1px solid #333; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); color: #fff; }
+        .admin-panel h3 { margin-bottom: 20px; color: #ffcc00; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-align: center;}
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
         .form-group label { color: #bbb; font-size: 13px; font-weight: bold;}
-        .form-group input { padding: 12px; background-color: #2b2b2b; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 15px; }
-        .submit-btn { background-color: #00828A; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .form-group input { padding: 12px; background-color: #2b2b2b; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 15px; width: 100%; }
+        .submit-btn { background-color: #00828A; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -53,8 +53,7 @@
                 </div>
             </div>
             <div class="logo-box">
-                <!-- Fallback teks jika gambar logo tidak ada -->
-                <small style="color:#000; font-weight:bold;">VALE</small>
+                <small style="color:#000; font-weight:bold; letter-spacing:1px;">VALE</small>
             </div>
         </div>
 
@@ -83,7 +82,7 @@
 
     <!-- PANEL INPUT CONTROL VIA HP -->
     <div class="admin-panel" id="hp-panel">
-        <h3>Pembaruan Jadwal Blasting (Remote HP)</h3>
+        <h3>Pembaruan Jadwal Blasting</h3>
         <form onsubmit="sendDataToCloud(event)">
             <div class="form-group">
                 <label>Tanggal Baru</label>
@@ -102,19 +101,22 @@
     </div>
 
     <script>
-        // FIX 2: Menggunakan Alamat Peer Publik GunDB yang Aktif & Stabil
-        const gun = Gun(['https://herokuapp.com']);
+        // SOLUSI: Menggunakan secure dht relay (Protokol wss:// aman untuk GitHub HTTPS)
+        const gun = Gun([
+            'https://herokuapp.com',
+            'wss://://herokuapp.com'
+        ]);
         const blastingNode = gun.get('vale_blasting_mo_blast_2026');
 
-        // Mendengar perubahan data secara Realtime
+        // Mendengar perubahan data secara live
         blastingNode.on(function(data) {
             if(data) {
                 if(data.date) document.getElementById('lbl-date').innerText = data.date;
                 if(data.time) document.getElementById('lbl-time').innerText = data.time;
                 if(data.location) document.getElementById('lbl-location').innerText = data.location;
                 
-                // Isi form otomatis di HP jika panel admin terbuka
-                if(document.getElementById('hp-panel').style.display === 'block') {
+                // Isi form otomatis di HP jika admin aktif
+                if (window.location.search.includes('admin')) {
                     document.getElementById('inp-date').value = data.date || "";
                     document.getElementById('inp-time').value = data.time || "";
                     document.getElementById('inp-location').value = data.location || "";
@@ -131,23 +133,18 @@
 
             blastingNode.put({ date: d, time: t, location: l }, function(ack){
                 if(ack.err) {
-                    alert("Gagal mengirim: " + ack.err);
+                    alert("Gagal sinkron: " + ack.err);
                 } else {
                     alert("Data Berhasil Sinkron ke Monitor Utama!");
                 }
             });
         }
 
-        // FIX LOGIKA ADMIN: Menampilkan panel input dan menyembunyikan monitor utama
-	if (window.location.search.includes('admin')) {
-   	 document.getElementById('hp-panel').style.display = 'block';
-    	 document.getElementById('main-dash').style.display = 'none'; // Selesai diperbaiki (tidak double .style)
-   	 document.getElementById('audio-control').style.display = 'none';
-    
-    // Opsional: Mengubah warna latar belakang agar nyaman di HP Admin
-    document.body.style.justifyContent = 'flex-start';
-}
-
+        // FILTER HALAMAN: Cek parameter URL untuk membuka mode admin
+        if (window.location.search.includes('admin')) {
+            document.getElementById('hp-panel').style.display = 'block';
+            document.getElementById('main-dash').style.display = 'none';
+            document.getElementById('audio-control').style.display = 'none';
         }
 
         // Kontrol Suara Sirine
@@ -156,7 +153,7 @@
 
         function togglePlay() {
             if (audio.paused) {
-                audio.play().catch(e => console.log("Izin audio diblokir browser, interaksi layar dulu."));
+                audio.play().catch(e => console.log("Izin audio browser aktif"));
                 btn.innerText = "⏸ Matikan Sirine";
             } else {
                 audio.pause();
