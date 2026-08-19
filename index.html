@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vale Blasting Dashboard - Realtime Live Sync</title>
-    <!-- Memanggil Server Database Pemancar Sinyal Online Gratis -->
+    
+    <!-- FIX 1: Memanggil pustaka GunDB yang valid dan super ringan -->
     <script src="https://jsdelivr.net"></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #121212; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; gap: 20px; padding: 20px; }
@@ -33,7 +35,7 @@
         .admin-panel h3 { margin-bottom: 15px; color: #ffcc00; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-align: center;}
         .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
         .form-group label { color: #bbb; font-size: 13px; font-weight: bold;}
-        .form-group input { padding: 12px; background-color: #2b2b2b; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 15px; pointer-events: auto !important; }
+        .form-group input { padding: 12px; background-color: #2b2b2b; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 15px; }
         .submit-btn { background-color: #00828A; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
@@ -51,7 +53,8 @@
                 </div>
             </div>
             <div class="logo-box">
-                <img src="logo-vale.png" alt="Logo PT Vale">
+                <!-- Fallback teks jika gambar logo tidak ada -->
+                <small style="color:#000; font-weight:bold;">VALE</small>
             </div>
         </div>
 
@@ -99,49 +102,66 @@
     </div>
 
     <script>
-        // Mengaktifkan Antena Jaringan Database Online Bebas Blokir
+        // FIX 2: Menggunakan Alamat Peer Publik GunDB yang Aktif & Stabil
         const gun = Gun(['https://herokuapp.com']);
         const blastingNode = gun.get('vale_blasting_mo_blast_2026');
 
-        // Monitor Lapangan Otomatis Mendengar Ketikan HP secara Live (0 Detik)
+        // Mendengar perubahan data secara Realtime
         blastingNode.on(function(data) {
-            if(data.date) document.getElementById('lbl-date').innerText = data.date;
-            if(data.time) document.getElementById('lbl-time').innerText = data.time;
-            if(data.location) document.getElementById('lbl-location').innerText = data.location;
-            
-            // Mengisi otomatis teks kolom HP agar sinkron saat dibuka kembali
-            if(document.getElementById('hp-panel').style.display === 'block') {
-                document.getElementById('inp-date').value = data.date || "19 / 08 / 2026";
-                document.getElementById('inp-time').value = data.time || "14.45 WITA";
-                document.getElementById('inp-location').value = data.location || "Harapan";
+            if(data) {
+                if(data.date) document.getElementById('lbl-date').innerText = data.date;
+                if(data.time) document.getElementById('lbl-time').innerText = data.time;
+                if(data.location) document.getElementById('lbl-location').innerText = data.location;
+                
+                // Isi form otomatis di HP jika panel admin terbuka
+                if(document.getElementById('hp-panel').style.display === 'block') {
+                    document.getElementById('inp-date').value = data.date || "";
+                    document.getElementById('inp-time').value = data.time || "";
+                    document.getElementById('inp-location').value = data.location || "";
+                }
             }
         });
 
-        // Fungsi saat Anda menekan tombol KIRIM dari HP
+        // Fungsi kirim data dari HP
         function sendDataToCloud(e) {
             e.preventDefault();
             const d = document.getElementById('inp-date').value;
             const t = document.getElementById('inp-time').value;
             const l = document.getElementById('inp-location').value;
 
-            // Memancarkan data secara nirkabel menembus semua server
-            blastingNode.put({ date: d, time: t, location: l });
-            alert("Data Berhasil Dikirim ke Monitor Utama!");
+            blastingNode.put({ date: d, time: t, location: l }, function(ack){
+                if(ack.err) {
+                    alert("Gagal mengirim: " + ack.err);
+                } else {
+                    alert("Data Berhasil Sinkron ke Monitor Utama!");
+                }
+            });
         }
 
-        // FILTER HALAMAN: Jika mendeteksi akhiran '?admin' di browser HP
-        if (window.location.search.includes('admin')) {
-            document.getElementById('hp-panel').style.display = 'block';
-            document.getElementById('main-dash').style.display = 'none';
-            document.getElementById('audio-control').style.display = 'none';
-            document.body.style.backgroundColor = '#1a1a1a';
+        // FIX LOGIKA ADMIN: Menampilkan panel input dan menyembunyikan monitor utama
+	if (window.location.search.includes('admin')) {
+   	 document.getElementById('hp-panel').style.display = 'block';
+    	 document.getElementById('main-dash').style.display = 'none'; // Selesai diperbaiki (tidak double .style)
+   	 document.getElementById('audio-control').style.display = 'none';
+    
+    // Opsional: Mengubah warna latar belakang agar nyaman di HP Admin
+    document.body.style.justifyContent = 'flex-start';
+}
+
         }
+
+        // Kontrol Suara Sirine
+        const audio = document.getElementById("sirineAudio");
+        const btn = document.getElementById("audio-control");
 
         function togglePlay() {
-            var audio = document.getElementById("sirineAudio");
-            var btn = document.getElementById("audio-control");
-            if (audio.paused) { audio.play(); btn.innerHTML = "🔇 Matikan Sirine"; } 
-            else { audio.pause(); btn.innerHTML = "🔊 Aktifkan Sirine"; }
+            if (audio.paused) {
+                audio.play().catch(e => console.log("Izin audio diblokir browser, interaksi layar dulu."));
+                btn.innerText = "⏸ Matikan Sirine";
+            } else {
+                audio.pause();
+                btn.innerText = "🔊 Aktifkan Sirine";
+            }
         }
     </script>
 </body>
