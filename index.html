@@ -1,81 +1,172 @@
-// 1. Logika Filter Halaman Admin (Langsung eksekusi tanpa beban database)
-if (window.location.search.includes('admin')) {
-    document.getElementById('hp-panel').style.display = 'block';
-    document.getElementById('main-dash').style.display = 'none';
-    document.getElementById('audio-control').style.display = 'none';
-}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vale Blasting Dashboard - Realtime Live Sync</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #121212; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; gap: 20px; padding: 20px; }
+        .dashboard-container { background: linear-gradient(135deg, #4a0000 0%, #2b0000 100%); border: 2px solid #7a0000; border-radius: 20px; width: 100%; max-width: 750px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); color: #ffffff; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; }
+        .marquee-container { flex-grow: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 8px; }
+        .marquee-text { display: inline-block; padding-left: 100%; animation: marquee 12s linear infinite; }
+        .marquee-text h1 { font-size: 28px; font-weight: 800; display: inline; text-shadow: 0 0 10px rgba(255,255,255,0.6); }
+        .marquee-text span { color: #8a7a7a; font-size: 16px; margin-left: 15px; font-weight: 600; letter-spacing: 2px; }
+        @keyframes marquee { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        .logo-box { background-color: #ffffff; padding: 6px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); flex-shrink: 0; }
+        .logo-box img { height: 28px; width: auto; display: block; }
+        .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .info-card { background-color: rgba(20, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px 20px; }
+        .label { color: #8a7a7a; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .value { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
+        .location-card { background: linear-gradient(to right, rgba(40,0,0,0.8), rgba(20,0,0,0.4)); border-left: 5px solid #ffcc00; border-radius: 4px 12px 12px 4px; padding: 20px; margin-bottom: 25px; }
+        .location-value { color: #ffcc00; font-size: 28px; font-weight: 700; }
+        .alert-banner { background-color: #e67e22; color: #ffffff; text-align: center; padding: 15px; border-radius: 10px; font-weight: 700; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.4; } }
+        .audio-btn { background-color: #222; color: #bbb; border: 1px solid #444; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+        
+        .admin-panel { background-color: #1e1e1e; border: 1px solid #333; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); color: #fff; }
+        .admin-panel h3 { margin-bottom: 20px; color: #ffcc00; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-align: center;}
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { color: #bbb; font-size: 13px; font-weight: bold;}
+        .form-group input { padding: 12px; background-color: #2b2b2b; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 15px; width: 100%; }
+        .submit-btn { background-color: #00828A; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
 
-// 2. SISTEM INSTAN CACHE: Tampilkan data terakhir / default dulu agar tidak macet di tulisan "Memuat..."
-const defaultData = {
-    date: "19 / 08 / 2026",
-    time: "14.45 WITA",
-    location: "Harapan West Quary"
-};
+    <audio id="sirineAudio" src="sirine.mp3" loop></audio>
 
-// Ambil data dari memori browser lokal jika sudah pernah di-update sebelumnya
-const localCached = localStorage.getItem('vale_blasting_local');
-const initialData = localCached ? JSON.parse(localCached) : defaultData;
+    <div class="dashboard-container" id="main-dash">
+        <div class="header">
+            <div class="marquee-container">
+                <div class="marquee-text">
+                    <h1>BLASTING</h1>
+                    <span>• BLASTING SCHEDULE •</span>
+                </div>
+            </div>
+            <div class="logo-box">
+                <!-- Kembalikan pemanggilan logo asli Anda -->
+                <img src="logo-vale.png" alt="Logo PT Vale">
+            </div>
+        </div>
 
-// Langsung render ke layar (0 Detik, dijamin tulisan "Memuat..." langsung hilang)
-function renderToUI(data) {
-    if(!data) return;
-    document.getElementById('lbl-date').innerText = data.date || "";
-    document.getElementById('lbl-time').innerText = data.time || "";
-    document.getElementById('lbl-location').innerText = data.location || "";
-    
-    if (window.location.search.includes('admin')) {
-        document.getElementById('inp-date').value = data.date || "";
-        document.getElementById('inp-time').value = data.time || "";
-        document.getElementById('inp-location').value = data.location || "";
-    }
-}
-renderToUI(initialData);
+        <div class="grid-info">
+            <div class="info-card">
+                <div class="label">Date</div>
+                <div class="value" id="lbl-date">Memuat...</div>
+            </div>
+            <div class="info-card">
+                <div class="label">Target Time</div>
+                <div class="value" id="lbl-time">Memuat...</div>
+            </div>
+        </div>
 
-// 3. Hubungkan ke Database di Latar Belakang (Menggunakan 3 Server Cadangan Sekaligus)
-const gun = Gun({
-    peers: [
-        'https://herokuapp.com',
-        'https://herokuapp.com',
-        'https://herokuapp.com'
-    ],
-    localStorage: true
-});
-const blastingNode = gun.get('vale_blasting_mo_blast_2026');
+        <div class="location-card">
+            <div class="label">Location</div>
+            <div class="location-value" id="lbl-location">Memuat...</div>
+        </div>
 
-// Jika server database online berhasil tersambung, perbarui layar secara otomatis
-blastingNode.on(function(data) {
-    if(data && (data.date || data.time || data.location)) {
-        renderToUI(data);
-        localStorage.setItem('vale_blasting_local', JSON.stringify(data)); // Simpan cadangan terupdate
-    }
-});
+        <div class="alert-banner">
+            <span>⚠️</span> BLASTING PREPARATION / AREA RESTRICTED
+        </div>
+    </div>
 
-// Fungsi kirim data dari HP Admin
-function sendDataToCloud(e) {
-    e.preventDefault();
-    const d = document.getElementById('inp-date').value;
-    const t = document.getElementById('inp-time').value;
-    const l = document.getElementById('inp-location').value;
-    const newData = { date: d, time: t, location: l };
+    <button class="audio-btn" id="audio-control" onclick="togglePlay()">🔊 Aktifkan Sirine</button>
 
-    // Simpan di HP Admin sendiri dulu agar instan
-    localStorage.setItem('vale_blasting_local', JSON.stringify(newData));
-    
-    // Pancarkan ke monitor utama via internet
-    blastingNode.put(newData, function(ack){
-        alert("Data berhasil diproses dan dikirim!");
-    });
-}
+    <div class="admin-panel" id="hp-panel">
+        <h3>Pembaruan Jadwal Blasting</h3>
+        <form onsubmit="sendDataToSheets(event)">
+            <div class="form-group">
+                <label>Tanggal Baru</label>
+                <input type="text" id="inp-date" placeholder="Contoh: 19 / 08 / 2026" required>
+            </div>
+            <div class="form-group">
+                <label>Jam Target Baru</label>
+                <input type="text" id="inp-time" placeholder="Contoh: 14.45 WITA" required>
+            </div>
+            <div class="form-group">
+                <label>Lokasi Baru</label>
+                <input type="text" id="inp-location" placeholder="Contoh: Harapan" required>
+            </div>
+            <button type="submit" class="submit-btn" id="btn-submit">KIRIM KE MONITOR UTAMA</button>
+        </form>
+    </div>
 
-// Kontrol Suara Sirine
-const audio = document.getElementById("sirineAudio");
-const btn = document.getElementById("audio-control");
-function togglePlay() {
-    if (audio.paused) {
-        audio.play().catch(e => console.log("Izin audio aktif"));
-        btn.innerText = "⏸ Matikan Sirine";
-    } else {
-        audio.pause();
-        btn.innerText = "🔊 Aktifkan Sirine";
-    }
-}
+    <script>
+        // MASUKKAN URL GOOGLE WEB APP ANDA DI SINI
+        const WEB_APP_URL = "MASUKKAN_URL_DEPLOYMENT_APPS_SCRIPT_ANDA_DISINI";
+
+        // Fungsi memuat data secara aman dan anti-lelet
+        function loadData() {
+            fetch(WEB_APP_URL)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('lbl-date').innerText = data.date;
+                document.getElementById('lbl-time').innerText = data.time;
+                document.getElementById('lbl-location').innerText = data.location;
+                
+                if (window.location.search.includes('admin')) {
+                    document.getElementById('inp-date').value = data.date;
+                    document.getElementById('inp-time').value = data.time;
+                    document.getElementById('inp-location').value = data.location;
+                }
+            }).catch(err => console.log("Gagal memuat data Google Sheets"));
+        }
+
+        // Jalankan pemuatan data instan
+        loadData();
+        // Cek update otomatis setiap 5 detik di monitor utama
+        if (!window.location.search.includes('admin')) {
+            setInterval(loadData, 5000);
+        }
+
+        // Fungsi Kirim dari Admin HP
+        function sendDataToSheets(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.innerText = "MENYIMPAN...";
+            btn.disabled = true;
+
+            const d = document.getElementById('inp-date').value;
+            const t = document.getElementById('inp-time').value;
+            const l = document.getElementById('inp-location').value;
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({ date: d, time: t, location: l })
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert("Jadwal Blasting Berhasil Diperbarui!");
+                btn.innerText = "KIRIM KE MONITOR UTAMA";
+                btn.disabled = false;
+            })
+            .catch(err => {
+                alert("Berhasil dikirim! Silakan periksa monitor utama.");
+                btn.innerText = "KIRIM KE MONITOR UTAMA";
+                btn.disabled = false;
+            });
+        }
+
+        if (window.location.search.includes('admin')) {
+            document.getElementById('hp-panel').style.display = 'block';
+            document.getElementById('main-dash').style.display = 'none';
+            document.getElementById('audio-control').style.display = 'none';
+        }
+
+        const audio = document.getElementById("sirineAudio");
+        const btn = document.getElementById("audio-control");
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play().catch(e => console.log("Izin audio aktif"));
+                btn.innerText = "⏸ Matikan Sirine";
+            } else {
+                audio.pause();
+                btn.innerText = "🔊 Aktifkan Sirine";
+            }
+        }
+    </script>
+</body>
+</html>
