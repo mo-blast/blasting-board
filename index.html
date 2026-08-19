@@ -101,11 +101,16 @@
     </div>
 
     <script>
-        // SOLUSI: Menggunakan secure dht relay (Protokol wss:// aman untuk GitHub HTTPS)
-        const gun = Gun([
-            'https://herokuapp.com',
-            'wss://://herokuapp.com'
-        ]);
+       // Mengaktifkan penyimpanan lokal di memori browser agar visual langsung terbuka tanpa menunggu internet
+const gun = Gun({
+    peers: [
+        'https://herokuapp.com',
+        'wss://://herokuapp.com'
+    ],
+    localStorage: true,
+    retry: 2000 // Batasi waktu tunggu koneksi maksimal 2 detik agar tidak loading selamanya
+});
+
         const blastingNode = gun.get('vale_blasting_mo_blast_2026');
 
         // Mendengar perubahan data secara live
