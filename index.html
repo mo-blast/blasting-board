@@ -1,83 +1,103 @@
-    <!-- Batas akhir elemen visual Anda -->
-    <button class="audio-btn" id="audio-control" onclick="togglePlay()">🔊 Aktifkan Sirine</button>
+// 1. SISTEM INSTAN CACHE & DEFAULT DATA
+const defaultData = {
+    date: "19 / 08 / 2026",
+    time: "14.45 WITA",
+    location: "Harapan West Quary"
+};
 
-    <!-- Pastikan ada pembuka tag script di sini -->
-    <script>
-        // 1. Logika Filter Halaman Admin
-        if (window.location.search.includes('admin')) {
-            document.getElementById('hp-panel').style.display = 'block';
-            document.getElementById('main-dash').style.display = 'none';
-            document.getElementById('audio-control').style.display = 'none';
-        }
+// Ambil data cadangan dari memori browser agar loading 0 detik
+const localCached = localStorage.getItem('vale_blasting_local');
+const initialData = localCached ? JSON.parse(localCached) : defaultData;
 
-        // 2. SISTEM INSTAN CACHE
-        const defaultData = {
-            date: "19 / 08 / 2026",
-            time: "14.45 WITA",
-            location: "Harapan West Quary"
-        };
+// Fungsi menggambar data ke layar (Aman untuk Monitor & HP Admin)
+function renderToUI(data) {
+    if(!data) return;
+    
+    // Update teks monitor utama jika elemennya ada
+    const lblDate = document.getElementById('lbl-date');
+    const lblTime = document.getElementById('lbl-time');
+    const lblLocation = document.getElementById('lbl-location');
+    
+    if(lblDate) lblDate.innerText = data.date || "";
+    if(lblTime) lblTime.innerText = data.time || "";
+    if(lblLocation) lblLocation.innerText = data.location || "";
+    
+    // Update teks kolom input HP Admin agar sinkron otomatis
+    const inpDate = document.getElementById('inp-date');
+    const inpTime = document.getElementById('inp-time');
+    const inpLocation = document.getElementById('inp-location');
+    
+    if(inpDate) inpDate.value = data.date || "";
+    if(inpTime) inpTime.value = data.time || "";
+    if(inpLocation) inpLocation.value = data.location || "";
+}
 
-        const localCached = localStorage.getItem('vale_blasting_local');
-        const initialData = localCached ? JSON.parse(localCached) : defaultData;
+// 2. LOGIKA PEMISAH HALAMAN (MONITOR VS ADMIN HP)
+// Fungsi ini dijalankan setelah fungsi render UI siap agar tidak merusak tampilan
+function aturTampilanHalaman() {
+    if (window.location.search.includes('admin')) {
+        // Jika mode ADMIN: Tampilkan panel input, sembunyikan monitor besar
+        if(document.getElementById('hp-panel')) document.getElementById('hp-panel').style.display = 'block';
+        if(document.getElementById('main-dash')) document.getElementById('main-dash').style.display = 'none';
+        if(document.getElementById('audio-control')) document.getElementById('audio-control').style.display = 'none';
+    } else {
+        // Jika mode MONITOR UTAMA: Pastikan monitor muncul, sembunyikan panel input
+        if(document.getElementById('main-dash')) document.getElementById('main-dash').style.display = 'block';
+        if(document.getElementById('hp-panel')) document.getElementById('hp-panel').style.display = 'none';
+        if(document.getElementById('audio-control')) document.getElementById('audio-control').style.display = 'block';
+    }
+}
 
-        function renderToUI(data) {
-            if(!data) return;
-            document.getElementById('lbl-date').innerText = data.date || "";
-            document.getElementById('lbl-time').innerText = data.time || "";
-            document.getElementById('lbl-location').innerText = data.location || "";
-            
-            if (window.location.search.includes('admin')) {
-                document.getElementById('inp-date').value = data.date || "";
-                document.getElementById('inp-time').value = data.time || "";
-                document.getElementById('inp-location').value = data.location || "";
-            }
-        }
-        renderToUI(initialData);
+// Jalankan render data awal dan atur tampilan layar secara instan
+renderToUI(initialData);
+aturTampilanHalaman();
 
-        // 3. Hubungkan ke Database di Latar Belakang
-        const gun = Gun({
-            peers: [
-                'https://herokuapp.com',
-                'https://herokuapp.com',
-                'https://herokuapp.com'
-            ],
-            localStorage: true
-        });
-        const blastingNode = gun.get('vale_blasting_mo_blast_2026');
+// 3. KONEKSI DATABASE DI LATAR BELAKANG (Anti-Lelet)
+const gun = Gun({
+    peers: [
+        'https://herokuapp.com',
+        'https://herokuapp.com',
+        'https://herokuapp.com'
+    ],
+    localStorage: true
+});
+const blastingNode = gun.get('vale_blasting_mo_blast_2026');
 
-        blastingNode.on(function(data) {
-            if(data && (data.date || data.time || data.location)) {
-                renderToUI(data);
-                localStorage.setItem('vale_blasting_local', JSON.stringify(data));
-            }
-        });
+// Dengar perubahan data dari internet secara live
+blastingNode.on(function(data) {
+    if(data && (data.date || data.time || data.location)) {
+        renderToUI(data);
+        localStorage.setItem('vale_blasting_local', JSON.stringify(data)); // Simpan ke memori lokal browser
+    }
+});
 
-        function sendDataToCloud(e) {
-            e.preventDefault();
-            const d = document.getElementById('inp-date').value;
-            const t = document.getElementById('inp-time').value;
-            const l = document.getElementById('inp-location').value;
-            const newData = { date: d, time: t, location: l };
+// Fungsi saat admin menekan tombol KIRIM dari HP
+function sendDataToCloud(e) {
+    e.preventDefault();
+    const d = document.getElementById('inp-date').value;
+    const t = document.getElementById('inp-time').value;
+    const l = document.getElementById('inp-location').value;
+    const newData = { date: d, time: t, location: l };
 
-            localStorage.setItem('vale_blasting_local', JSON.stringify(newData));
-            
-            blastingNode.put(newData, function(ack){
-                alert("Data berhasil diproses dan dikirim!");
-            });
-        }
+    // Simpan di internal browser HP sendiri dulu agar instan
+    localStorage.setItem('vale_blasting_local', JSON.stringify(newData));
+    renderToUI(newData);
+    
+    // Kirim sinyal ke Monitor Utama lewat server internet
+    blastingNode.put(newData, function(ack){
+        alert("Data Berhasil Sinkron ke Monitor Utama!");
+    });
+}
 
-        // Kontrol Suara Sirine
-        const audio = document.getElementById("sirineAudio");
-        const btn = document.getElementById("audio-control");
-        function togglePlay() {
-            if (audio.paused) {
-                audio.play().catch(e => console.log("Izin audio aktif"));
-                btn.innerText = "⏸ Matikan Sirine";
-            } else {
-                audio.pause();
-                btn.innerText = "🔊 Aktifkan Sirine";
-            }
-        }
-    </script> <!-- Pastikan ada penutup tag script di sini -->
-</body>
-</html>
+// KONTROL AUDIO SIRINE
+const audio = document.getElementById("sirineAudio");
+const btn = document.getElementById("audio-control");
+function togglePlay() {
+    if (audio.paused) {
+        audio.play().catch(e => console.log("Izin audio aktif"));
+        btn.innerText = "⏸ Matikan Sirine";
+    } else {
+        audio.pause();
+        btn.innerText = "🔊 Aktifkan Sirine";
+    }
+}
